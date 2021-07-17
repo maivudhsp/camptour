@@ -22,12 +22,15 @@ const seedDB = async () => {
     await Camptour.deleteMany({});
 
     const sample = array => array[Math.floor(Math.random() * array.length)];
-
+    const price = Math.floor(Math.random() * 20) + 10;
     for (let i = 0; i < 50; i++) {
         const random = Math.floor(Math.random() * 1000);
         const camp = new Camptour({
             location: `${cities[random].city}, ${cities[random].state}`,
-            title: `${sample(descriptors)} ${sample(places)}`
+            title: `${sample(descriptors)} ${sample(places)}`,
+            image: 'https://source.unsplash.com/collection/190727',
+            description: 'Using any of the above formats, you can narrow the selection of a random photo even further by supplying a list of comma-separated search terms at the end of the URL.',
+            price
         })
         await camp.save()
     }
