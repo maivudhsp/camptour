@@ -2,12 +2,7 @@ const Joi = require('joi');
 
 module.exports.camptourSchema = Joi.object({
         camptour: Joi.object({
-            title: Joi
-                .string()
-                .alphanum()
-                .min(3)
-                .max(30)
-                .required(),
+            title: Joi.string().required(),
             price: Joi.number().required().min(0),
             image: Joi.string().required(),
             location: Joi.string().required(),

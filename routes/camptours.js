@@ -2,21 +2,11 @@ const express = require('express');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 const router = express.Router();
+const { validateCamptour } = require('../utils/middleware');
+
+const Camptour = require('../models/camptour');
 
 
-const Camptour = require('../models/Camptour');
-
-
-//validate camptours
-const validateCamptour = (req, res, next) => {   
-    const { error } = camptourSchema.validate(req.body);
-    if (error) {
-        const message = error.details.map(el => el.message).join(',')
-        throw new AppError(message, 400)
-    } else {
-        next();
-    }
-}
 
 
 //get all Camptour
@@ -37,6 +27,7 @@ router.post('/',validateCamptour, catchAsync(async (req, res) => {
    
     const camptour = new Camptour(req.body.camptour);
     await camptour.save();
+    req.flash('success', 'Successfully made a new camptour');
     res.redirect(`/camptours/${camptour._id}`);
 }));
 
@@ -44,9 +35,9 @@ router.post('/',validateCamptour, catchAsync(async (req, res) => {
 //get a camptours
 router.get('/:id', catchAsync(async (req, res) => {
     const camptour = await Camptour.findById(req.params.id).populate('reviews');
-    console.log(camptour);
     if (!camptour) {
-        return new AppError('Camptour not found', 404);
+        req.flash('error', 'Cannot find that camptour!')
+        return res.redirect('/camptours');
     }
     res.render('camptours/show', { camptour })
 }))
@@ -55,7 +46,9 @@ router.get('/:id', catchAsync(async (req, res) => {
 router.get('/:id/edit', catchAsync(async (req, res) => {
     const camptour = await Camptour.findById(req.params.id);
     if (!camptour) {
-        return new AppError('Camptour not found', 404);
+        req.flash('error', 'Cannot find that camptour!')
+        return res.redirect('/camptours');
+        //return new AppError('Camptour not found', 404);
     }
     res.render('camptours/edit', { camptour });
 }))
@@ -63,7 +56,14 @@ router.get('/:id/edit', catchAsync(async (req, res) => {
 //update a camptours
 router.put('/:id', catchAsync(async (req, res) => {
     const { id } = req.params;
-    const camptour = await Camptour.findByIdAndUpdate(id, { ...req.body.camptour });
+    const camptour = await Camptour.findById(id);
+    if (!camptour) {
+        req.flash('error', 'Cannot find that camptour!')
+        return res.redirect('/camptours');
+        //return new AppError('Camptour not found', 404);
+    }
+    await Camptour.findByIdAndUpdate(id, { ...req.body.camptour });
+    req.flash('success', 'Successfully made a update camptour');
     res.redirect(`/camptours/${camptour._id}`);
 }))
 
@@ -71,6 +71,10 @@ router.put('/:id', catchAsync(async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     await Camptour.findByIdAndDelete(id);
+    if (!id) {
+        req.flash('error', 'Id not found')
+    }
+    req.flash('success', 'Successfully delete a camptour');
     res.redirect('/camptours');
 })
 
