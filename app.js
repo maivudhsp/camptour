@@ -1,3 +1,10 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
+console.log(process.env.Cloudinary_name);
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -76,6 +83,8 @@ passport.deserializeUser(User.deserializeUser());
 
 //middleware flash
 app.use((req, res, next) => {
+    //console.log(req.user)
+    res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
